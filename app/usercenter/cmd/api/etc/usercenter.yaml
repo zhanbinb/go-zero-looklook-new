@@ -17,8 +17,8 @@ Prometheus:
 Telemetry:
   Name: usercenter-api
   Endpoint: http://jaeger:14268/api/traces
-  Sampler: 1.0
-  Batcher: jaeger
+  Sampler: 0.0
+  Batcher: file
 
 Log:
   ServiceName: usercenter-api
