@@ -104,6 +104,34 @@ WARN[0000] /Users/.../docker-compose-env.yml: the attribute `version` is obsolet
 
 **修复**：暂时不管，等 Step 5 全量改文件时一起删。
 
+### 坑 4：usercenter.yaml sed 替换漏了 127.0.0.1 前缀
+
+**现象**：
+```
+$ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/register -d '{"mobile":"13800138000","password":"test123456"}'
+{"code":100005,"msg":"数据库繁忙,请稍后再试"}
+```
+
+rpc 日志也指向 MySQL 失败：
+```
+fail - direct:/127.0.0.1:2004/pb.usercenter/register - ...
+  rpc error: code = Code(100005) desc = 数据库繁忙,请稍后再试
+```
+
+**原因**：
+原计划执行 `sed -i '' 's|Host: redis:6379|Host: 127.0.0.1:36379|g'`，期望把 docker 服务名换成 host 端口。但实际执行后变成 `Host: redis:36379`（**漏了 `127.0.0.1.` 前缀**）。usercenter 进程去找 `redis:36379` 这个主机名，host 上解析不到 → 950ms 超时 → "数据库繁忙"。mysql 同样踩坑（`mysql:33069` 缺 `127.0.0.1.` 前缀）。
+
+**修复**：
+```bash
+sed -i '' 's|Host: redis:36379|Host: 127.0.0.1:36379|g' app/usercenter/cmd/rpc/etc/usercenter.yaml
+sed -i '' 's|@tcp(mysql:33069)|@tcp(127.0.0.1:33069)|g' app/usercenter/cmd/rpc/etc/usercenter.yaml
+```
+
+**教训**：
+- sed 替换后必须 `diff` 验证，不能"假设它改对了"就继续
+- yaml 里"端口号变了但主机名没变"这种**半改状态**最容易踩坑
+- 一开始就要把目标写完整（`127.0.0.1:36379`）而不是分两步改
+
 ## 验证步骤
 
 ### 1. 覆盖改好的 yaml
@@ -183,3 +211,42 @@ exit
 ## 下一步
 
 跑通 Step 1 后，进入 Step 2：升级开发工具链（modd → air + Dockerfile 基础镜像）。
+
+
+## 已知未完成（2026-08-04 18:00 状态）
+
+- [ ] login + detail 接口完整跑通（验证 token 解析、jwt 中间件）
+- [ ] 跑通其他 4 个服务（travel / payment / order / mqueue）
+- [ ] 部署模式工程化：host 模式（127.0.0.1）vs 容器模式（mysql:3306），需要 profile-based config 或 env var 替换
+
+## 补充反思
+
+### 1. "基线复制 + 验证"是升级的最低风险起点
+
+- 不动业务代码，纯粹"复制 + 启动 + 跑通"
+- 跑通后再考虑升级 → 每个升级动作都能跟"baseline 跑通状态"对比，知道是升级带来的回归还是原有问题
+- 节省"原项目就有 bug"和"我升级引入 bug"的定位时间
+
+### 2. "先 host 跑通 → 再考虑容器化"是务实路径
+
+- 原项目用 modd 容器跑（容器 join looklook_net），yaml 用 docker 服务名 `mysql:3306` / `redis:6379`
+- 我们 host 跑必须改 yaml（用 127.0.0.1 + host 端口）
+- **不要一开始就想"完全贴合原设计"** —— 先 host 跑通业务，再回头补容器化
+- 容器化是"工程化"层面的事，业务跑通后做更稳
+
+### 3. sed 命令一定要 `diff` 验证才执行
+
+- 这次 sed 漏前缀的根因是"没看 diff 就跑下一步"
+- 养成 `sed → diff → 跑` 的三步习惯能避免 90% 的脚本报错
+- macOS BSD sed 的 `-i ''` 跟 Linux GNU sed `-i` 不一样，更容易写错
+
+### 4. API 字段定义要查 `.api` 文件
+
+- 我最初给的 curl 加了 `nickname` 字段（RegisterReq 实际没有），不会报错但被忽略
+- UserInfoReq 是空结构体 `{}`，传 `{"id": 1}` 会被忽略
+- 跟 04 文档里展示的字段名不一定一致 —— **写请求体前先 cat .api 文件确认**
+
+### 5. 路由 prefix 一定要在 `@server` 里看
+
+- 文档里写 `/user/register`，实际是 `/usercenter/v1/user/register`
+- 404 时第一反应应该是 `grep "@server" xxx.api` 找 prefix
