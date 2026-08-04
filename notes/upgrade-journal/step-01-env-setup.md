@@ -215,7 +215,7 @@ exit
 
 ## 已知未完成（2026-08-04 18:00 状态）
 
-- [ ] login + detail 接口完整跑通（验证 token 解析、jwt 中间件）
+- [x] login + detail 接口完整跑通（验证 token 解析、jwt 中间件）✅ 2026-08-04，详见 step-01.5-jwt-validation.md
 - [ ] 跑通其他 4 个服务（travel / payment / order / mqueue）
 - [ ] 部署模式工程化：host 模式（127.0.0.1）vs 容器模式（mysql:3306），需要 profile-based config 或 env var 替换
 
