@@ -7,6 +7,7 @@ services:
   #jaeger链路追踪 — Jaeger for tracing
   jaeger:
     image: jaegertracing/all-in-one:1.63.0
+    platform: linux/amd64
     container_name: jaeger
     restart: always
     ports:
@@ -29,6 +30,7 @@ services:
   #prometheus监控 — Prometheus for monitoring
   prometheus:
     image: prom/prometheus:v2.28.1
+    platform: linux/amd64
     container_name: prometheus
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -49,6 +51,7 @@ services:
   #查看prometheus监控数据 - Grafana to view Prometheus monitoring data
   grafana:
     image: grafana/grafana:8.0.6
+    platform: linux/amd64
     container_name: grafana
     hostname: grafana
     user: root
@@ -66,6 +69,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:8.12.2
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
@@ -84,6 +88,7 @@ services:
   kibana:
     container_name: kibana
     image: kibana:8.12.2
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       - "TZ=Asia/Shanghai"
@@ -100,6 +105,7 @@ services:
   #消费kafka中filebeat收集的数据输出到es - The data output collected by FileBeat in Kafka is output to ES
   go-stash:
     image: kevinwan/go-stash:1.1.1
+    platform: linux/amd64
     container_name: go-stash
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -116,6 +122,7 @@ services:
   #收集业务数据 - Collect business data
   filebeat:
     image: elastic/filebeat:8.12.2
+    platform: linux/amd64
     container_name: filebeat
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -138,6 +145,7 @@ services:
   #消息队列 - Message queue
   kafka:
     image: apache/kafka:3.9.0
+    platform: linux/amd64
     container_name: kafka
     ports:
       - 9092:9092  # 容器内部之间使用的监听端口
@@ -166,6 +174,7 @@ services:
   #asynqmon asynq延迟队列、定时队列的webui - Asynqmon asynq delay queue, timing queue's webUI
   asynqmon:
     image: hibiken/asynqmon:latest
+    platform: linux/amd64
     container_name: asynqmon
     ports:
       - 8980:8080
@@ -180,6 +189,7 @@ services:
 
   mysql:
     image: mysql/mysql-server:8.0.28
+    platform: linux/amd64
     container_name: mysql
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -208,6 +218,7 @@ services:
   #redis容器 - Redis container
   redis:
     image: redis:6.2.5
+    platform: linux/amd64
     container_name: redis
     ports:
       - 36379:6379
