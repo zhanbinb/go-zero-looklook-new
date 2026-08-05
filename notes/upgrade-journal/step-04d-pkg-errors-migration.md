@@ -207,3 +207,29 @@ $ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/detail -H "Authorization
 - [ ] 跑通其他 4 个服务
 - [ ] 部署模式工程化
 - [ ] OpenTelemetry 集成
+
+---
+
+## 4d 全量状态更新（2026-08-05, v3.10 决策）
+
+**变化**：原计划 4d-2 全量迁移 order/travel/payment/mqueue 4 个服务（76 处）暂缓。
+
+**原因（用户在新一轮讨论中明确指示）**：
+1. 用户策略调整：业务闭环（ch 4-8）优先于纯库升级（4d 等）
+2. 4d 全量的价值是"端到端 smoke test 验证迁移零回归"
+3. 没有业务跑通做"被迁移方"时，迁移 = 在空气上 build/test
+4. 真实决策依据见 [`step-replan-2026-08-05.md`](step-replan-2026-08-05.md) § 2 视角 C
+
+**go.mod 影响**：
+- `github.com/pkg/errors v0.9.1` 仍保留（order/travel/payment/mqueue 还在用）
+- `go mod tidy` 在 4d-2 完成前不会自动删
+
+**重启 4d-2 的触发条件**：
+- M1 ✅（5 个服务已 smoke 通）
+- M2 ✅（RPC 全链路联调完成）
+- M3 ✅（最小 e2e 业务线走通一笔数据）
+- **之后**做 4d-2 自然价值最大化（端到端回归测试有真业务跑）
+
+**已经做的（usercenter 试点 + 通用 xerr helper）不浪费**：
+- `pkg/xerr/errors.go` 已加 `Wrapf/Wrap/Unwrap` 接口
+- 模式已验证，业务跑通后批量 sed 即可迁移

@@ -1,7 +1,8 @@
 # 重新规划：从"库升级优先"切换到"业务闭环优先"
 
 > 日期：2026-08-05  
-> 状态：⏳ 起草中，将取代 README.md 里老 Step 1-5 路线  
+> 状态：✅ 已确定，正在执行 (v3.10 已 commit + push)
+> 最近更新：M1 服务 smoke 5/7 通，⑨⑩ 日志验证待用户执行  
 > 触发：今天把 `doc/chinese/` 下 15 章教程完整扫了一遍，发现业务系统只跑通 1/5
 
 ---
@@ -18,10 +19,10 @@
 | 02 | nginx 网关         | ❌ 没做                         | deploy/nginx/conf.d/ 在，未跑 |
 | 03 | 鉴权服务           | ✅（嵌在 usercenter）           | JWT 中间件已验证 |
 | 04 | 用户服务           | ✅ smoke 通过                   | usercenter |
-| 05 | 民宿服务           | ⏳ 代码在，未起                 | travel |
-| 06 | 订单服务           | ⏳ 代码在，未起                 | order |
-| 07 | 支付服务           | ⏳ 代码在，未起                 | payment |
-| 08 | 消息/延迟/定时队列 | ⏳ 代码在，未起                 | kq (kafka) + asynq |
+| 05 | 民宿服务           | ✅ M1 smoke 全活 (homestayList/detail/businessList/BussinessList 通) | travel |
+| 06 | 订单服务           | 🔜 M1 smoke 部分通 (userHomestayOrderList ✅, createOrder 待 M2/M3 e2e) | order |
+| 07 | 支付服务           | 🔜 M1 smoke 部分 (createPayment 待用真实 orderSn 测试, 跳过微信回调) | payment |
+| 08 | 消息/延迟/定时队列 | 🔜 dev-up fix log 后 (⑨⑩ 用户正在查 log 内容) | kq (kafka) + asynq |
 | 09 | 分布式事务         | N/A（本项目不用 dtm）            | — |
 | 10 | 错误处理           | 🚧 Step 4d 进行中（**先暂停**）  | usercenter 试点完成 |
 | 11 | 日志收集           | ⏳ 中间件全起，未接业务           | filebeat→kafka→go-stash→ES→kibana |
@@ -191,8 +192,8 @@ M1 ✅ 11 个服务全活 ─► M2 联调打通 ─► M3 最小 e2e ─► M4 
 - Step 4d：pkg/errors 试点 ✅，全量暂缓 ⏸️
 
 [新路线]
-- Step 5：A 业务闭环（M1~M4）  ⏳ 当前
-  ├ M1：5 服务全活            ⏳ 起点
+- Step 5：A 业务闭环（M1~M4）  🔜 M1 收尾中 (5/7 smoke 通)
+  ├ M1：5 服务全活            🔜 收尾 (5/7 smoke 通, ⑨⑩ 待验)
   ├ M2：RPC 联调
   ├ M3：1 条 e2e
   └ M4：业务代码读懂 ch 4-8

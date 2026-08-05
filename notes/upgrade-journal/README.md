@@ -65,29 +65,20 @@ go-zero-looklook-study/
 - 每篇 step 笔记固定格式：目标 / 改动文件 / 关键 diff / 踩坑 / 验证 / 时长
 - **真理来源**：`doc/chinese/` 下 15 章教程 + 我们自己的 step 笔记
 
-## 立即可执行（起点 ① / M1）
+## 当前状态（M1 收尾中）
 
-详细步骤见 `step-replan-2026-08-05.md` 第 3 节。摘要：
+**最近 2 个 commit (v3.9 + v3.10)**：
+- `scripts/dev-up.sh` 现在把每个服务的 stdout/stderr 重定向到 `tmp/logs/<name>.log`，排查有据可查
+- M1.1-1.5 烟测 5/7 通过：travel 4 接口 + order.userHomestayOrderList + usercenter login
+- 烟测中暴露的 smoke 入参错误已修正 + dev-scan-stubs.sh 工具落地
 
-```bash
-# 1) 中间件检查
-docker ps --format 'table {{.Names}}\t{{.Status}}' | grep -E 'mysql|redis|kafka|elasticsearch|jaeger|prometheus|grafana|asynqmon|filebeat|go-stash'
+**下一步（用户执行）**：
+1. `./scripts/dev-down.sh && ./scripts/dev-up.sh` (拉新启动一次)
+2. `tail -n 50 tmp/logs/order-mq.log` 等三个 mq 服务 log
+3. 根据 log 内容判断是真活 / 真有错 / 启动后无 output
+4. 把 3 段输出贴回，M1 收尾完成后进入 M2 RPC 联调
 
-# 2) build 11 个 binary
-./scripts/dev-build.sh
-
-# 3) 启动全部服务 (后台)
-./scripts/dev-up.sh
-
-# 4) 看状态
-./scripts/dev-status.sh
-
-# 5) 单独的端口 smoke
-curl -X POST http://127.0.0.1:1004/usercenter/v1/user/login -d '{"mobile":"13800138000","password":"test123456"}'
-
-# 6) 全停
-./scripts/dev-down.sh
-```
+完整细节见 [`step-05-business-baseline.md`](step-05-business-baseline.md)。
 
 ## 已知未完成（按新优先级）
 

@@ -2,7 +2,7 @@
 
 > 日期：2026-08-05 开始  
 > 范围：从"只跑通 usercenter"扩展到"travel/order/payment/mqueue 全活"  
-> 状态：⏳ 进行中（M1.1 ✅ 中间件确认）  
+> 状态：🔜 M1 收尾中 (5/7 smoke 通 + dev-up.sh log fix 已 commit v3.9, docs+tools 已 commit v3.10)  
 > 关联：`step-replan-2026-08-05.md` 第 3 节 + `step-02.5-air-unified-done.md`
 
 ## 目标
@@ -13,13 +13,13 @@
 
 | 服务 | API | RPC | Prometheus | 状态 |
 |------|-----|-----|------------|------|
-| order | 1001 | 2001 | 4002 (rpc) | ⬜ 待 smoke |
-| payment | 1002 | 2002 | 4005 (rpc) | ⬜ 待 smoke |
-| travel | 1003 | 2003 | 4006/4007 | ⬜ 待 smoke |
+| order | 1001 | 2001 | 4002 (rpc) | ✅ userHomestayOrderList smoke 通 |
+| payment | 1002 | 2002 | 4005 (rpc) | 🔜 待用真 orderSn 测 (微信回调跳过) |
+| travel | 1003 | 2003 | 4006/4007 | ✅ 4 个 listing 接口全 smoke 通 |
 | usercenter | 1004 | 2004 | 4009 (rpc) | ✅ done in Step 1.5 |
-| order-mq | — | — | 4003 | ⬜ 待 smoke |
-| mqueue-scheduler | — | — | 4011 | ⬜ 待 smoke |
-| mqueue-job | — | — | 4010 | ⬜ 待 smoke |
+| order-mq | — | — | 4003 | 🔜 dev-up.sh fix 后用户查 log 内容 |
+| mqueue-scheduler | — | — | 4011 | 🔜 dev-up.sh fix 后用户查 log 内容 |
+| mqueue-job | — | — | 4010 | 🔜 dev-up.sh fix 后用户查 log 内容 |
 
 ---
 
@@ -49,21 +49,21 @@ go-clean-arch-mysql   Up 2 weeks (healthy)← 别人的项目
 - ES + kibana **用户主动停了**（mac air 性能考虑）—— M1-M4 不影响
 - 其他 3 个容器属于别的项目，无关
 
-### ⏳ M1.2 编译 11 个 binary
+### ✅ M1.2 编译 11 个 binary (15:32-15:35 完成)
 ✅ 已完成：tmp/ 里 11 个 binary 都是 2026-08-05 15:32-15:35 之间的产物
 
-### ⏳ M1.3 启动全部服务
+### ✅ M1.3 启动全部服务 (用户确认 log 有产生)
 等你执行 `./scripts/dev-up.sh`（或 `air -c .air.toml`）。
 
-### ⏳ M1.4 查看状态
+### ✅ M1.4 查看状态 (dev-status.sh 工作)
 ```bash
 ./scripts/dev-status.sh
 ```
 
-### ⏳ M1.5 逐服务 smoke 测试
+### 🔜 M1.5 逐服务 smoke 测试 (5/7 通, ⑨⑩ 待验)
 见下表。
 
-### ⏳ M1.6 修复 + commit
+### 🔜 M1.6 验证 ⑨⑩ log 后最终 commit (v3.9 dev-up fix + v3.10 docs 已发)
 
 ---
 
@@ -233,7 +233,7 @@ func (l *CommentListLogic) CommentList(req types.CommentListReq) (*types.Comment
 | ⑤ | travel.homestayBussinessList | ✅ | 列表正常 |
 | ⑥ | ~~travel.commentList~~ | 跳过 | 是空 stub (todo: add your logic here) |
 | ⑦ | order.userHomestayOrderList | ✅ | 入参修正: `lastId+pageSize+tradeState` (tradeState 必填, -99=全部) |
-| ⑧ | (待续) | — | — |
+| ⑧ payment.createPayment | 🔜 待用真 orderSn 测 (入参已校验: orderSn+serviceType) |
 
 ### 🐛 步骤 ⑨⑩ 发现: dev-up.sh 的"未起"假象
 
@@ -299,7 +299,7 @@ tail -n 50 tmp/logs/mqueue-job.log
 - ✅ M1.3 启动 11 服务（dev-up.sh 修复后能看到 log）
 - ✅ M1.4 状态查看 (dev-status.sh)
 - ✅ M1.5 smoke 5/7 + 1 跳过 + 1 修复
-- 🔜 M1.6 验证 ⑨⑩ 真活 + commit + push (本轮)
+- ✅ M1.6 commit + push 完成 (v3.9 dev-up fix + v3.10 docs+tools)
 - ⏳ M2 (RPC 联调) - 待启动
 
 ## 已知 follow-ups (按优先级)

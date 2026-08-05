@@ -86,3 +86,16 @@
 ---
 
 *创建于 2026-08-05，随着 M1-M4 推进实时更新*
+
+---
+
+## 评估历史记录
+
+| 时间 | 候选 | 决定 | 备注 |
+|------|------|------|------|
+| 2026-08-05 | dev-up.sh log redirect | ✅ 实施 (v3.9) | 原脚本没 stdout 重定向, 误以为 order-mq 未起 |
+| 2026-08-05 | seed-travel.sql | ✅ 实施 (v3.10) | 3 民宿 + 1 店铺 + 3 评论足以 smoke 4 个 listing 接口 |
+| 2026-08-05 | dev-scan-stubs.sh | ✅ 实施 (v3.10) | 扫 logic 空 stub 工具, 防止凭印象拼 smoke 入参 |
+| 2026-08-05 | 4d pkg/errors 全量 | ⏸️ 暂缓 (用户指示) | 等 M1+M2+M3 后做 |
+| 待评估 | docker dev mode (ch 03) | ⏸️ 暂缓 | 现有 host 模式够用, MacBook Air 内存约束 |
+

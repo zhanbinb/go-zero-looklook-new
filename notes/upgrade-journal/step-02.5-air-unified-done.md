@@ -47,3 +47,21 @@ air -c .air.toml
 ## 反思
 - macOS bash 3.2 不支持 `wait -n`, 用 ps 状态 + wait 收割做 poll loop
 - air v1.67.4 在 macOS 用 `syscall.Kill(-pid, SIGKILL)` 杀整个进程组, `send_interrupt=true` 让脚本 trap 先优雅清理
+
+---
+
+## 后续纠错（2026-08-05, v3.9 修复）
+
+上方"10/11 进程运行 (order-mq 未起)"的判断有误，**真相是 dev-up.sh 设计缺陷**：
+- 原 `dev-up.sh` 启动服务时 `"$bin" -f "$cfg" &` 完全没有 stdout/stderr 重定向
+- log 跟着后台进程飘走，没有文件落地
+- 当时 `ls tmp/logs/` 直接报"找不到目录"——所以"日志为空 = 进程死了"的推断证据不充分
+- **真相：order-mq / mqueue-scheduler / mqueue-job 一直活着**，阻塞在 `serviceGroup.Start()` / `Scheduler.Run()` / `AsynqServer.Run(mux)`，没产生可见 output
+
+**修复**：v3.9 commit —— dev-up.sh 加 `mkdir -p tmp/logs` + `>> "tmp/logs/${name}.log" 2>&1 &`。
+
+修复后用户已确认 `ls tmp/logs/` 有文件产生，等待 `tail -n 50 tmp/logs/<name>.log` 的内容。
+
+详细诊断过程见 [`step-05-business-baseline.md`](step-05-business-baseline.md) "步骤 ⑨⑩ 发现"section。
+
+> 保留这段历史结论作为 record-of-truth，因为 step-02.5 当时下结论时确实"找不到证据"；但**事实层面"未起"的说法应该被推翻**。
