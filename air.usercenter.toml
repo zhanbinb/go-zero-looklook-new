@@ -14,12 +14,12 @@ tmp_dir = "tmp"
   pre = []
 
   # build 命令
-  cmd = "go build -o ./tmp/usercenter-rpc ./app/usercenter/cmd/rpc"
+  cmd = "go build -o ./tmp/usercenter-rpc ./app/usercenter/cmd/rpc && go build -o ./tmp/usercenter-api ./app/usercenter/cmd/api"
 
   # 启动的二进制 + 参数
-  # 完整启动命令 (含路径 + 参数, go-zero 的 -f config.yaml 传配置)
-  # 不用 bin 字段, 因为新版 air 不支持 args, 必须用 full_bin
-  full_bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
+  # air 一次只能跑一个进程, 用 shell 脚本同时启 rpc + api
+  # 脚本: scripts/start-usercenter.sh (含 trap, 信号来了 kill 两个进程)
+  full_bin = "./scripts/start-usercenter.sh"
 
   # 延迟 (ms) - 文件变化后等多久再 build, 防止编辑器连续保存
   delay = 1000
