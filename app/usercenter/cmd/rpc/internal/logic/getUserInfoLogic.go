@@ -13,7 +13,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-var ErrUserNoExistsError = xerr.NewErrMsg("用户不存在")
+var ErrUserNoExistsError = xerr.NewErrMsg("手机用户不存在")
 
 type GetUserInfoLogic struct {
 	ctx    context.Context

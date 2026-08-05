@@ -88,6 +88,77 @@ air 默认读 `.air.toml`（隐藏文件）。我们用 `air.usercenter.toml` �
 - 默认文件名只能有 1 个，用命名后缀可以并存
 - 显式 `-c air.usercenter.toml` 比隐式更清楚
 
+## 试跑结果（2026-08-05 11:15）
+
+✅ **air v1.67.4 装好**, ✅ **build 成功**, ✅ **自动重启工作**, ✅ **smoke test 通过**
+
+## 踩坑记录
+
+### 坑 10：air 不认 `args` 字段，必须用 `full_bin`
+
+第一版我写：
+```toml
+[build]
+  bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
+```
+报错：`/bin/sh: ...usercenter-rpc -f ./...: No such file or directory`
+原因：air 把整个 `bin` 当成可执行路径，参数部分被当成路径一部分
+
+第二版我加 `args` 字段：
+```toml
+[build]
+  bin = "./tmp/usercenter-rpc"
+  args = ["-f", "./app/usercenter/cmd/rpc/etc/usercenter.yaml"]
+```
+报错：`config file etc/usercenter.yaml, open etc/usercenter.yaml: no such file or directory`
+原因：**新版 air 没有 `args` 字段**（我误以为是有的）
+
+第三版（最终正确）：
+```toml
+[build]
+  full_bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
+```
+✅ air 认 `full_bin`，参数正确传递
+
+**教训**：不要靠记忆写 air 字段名，**查源码**（`runner/config.go`）或 `air init` 生成默认配置再改
+
+### 坑 11：air 跟 nohup 不能共存
+
+air 跑的时候占 2004 端口，原来手动 nohup 的 usercenter-rpc 也占 2004
+第一个 air 启动失败，提示 `bind: address already in use`
+
+**修复**：跑 air 之前先 `kill` 掉手动跑的进程
+
+## 最终配置（air.usercenter.toml 关键部分）
+
+```toml
+[build]
+  cmd = "go build -o ./tmp/usercenter-rpc ./app/usercenter/cmd/rpc"
+  # 不用 bin + args, 用 full_bin 一行搞定
+  full_bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
+  delay = 1000
+  stop_on_error = true
+  include_ext = ["go", "yaml", "yml"]
+  exclude_dir = ["data", "tmp", "vendor", "deploy", "node_modules", ".git", "notes"]
+```
+
+## 试跑效果
+
+| 检查 | 结果 |
+|---|---|
+| 装 air (`go install github.com/air-verse/air@latest`) | ✅ v1.67.4 |
+| `which air` 找到 | ✅ `/Users/yangpeipei/.go_path/bin/air` |
+| air 启动 build usercenter-rpc | ✅ Build success |
+| 端口 2004 LISTEN | ✅ |
+| 改 .go 文件 → air 自动 rebuild | ✅ |
+| 改 .go 文件 → air 自动重启 usercenter-rpc | ✅ |
+| smoke test (login) | ✅ code 200, 拿到 token |
+| 彩色输出 + 状态条 | ✅ 体验比 modd 好 |
+
+## 结论
+
+**air 替换 modd 验证通过**, 可以考虑推广到其他 4 个服务.
+
 ## 待定事项（试完再决定）
 
 - [ ] air 试跑体验如何？

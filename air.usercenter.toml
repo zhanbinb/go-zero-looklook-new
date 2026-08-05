@@ -17,7 +17,9 @@ tmp_dir = "tmp"
   cmd = "go build -o ./tmp/usercenter-rpc ./app/usercenter/cmd/rpc"
 
   # 启动的二进制 + 参数
-  bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
+  # 完整启动命令 (含路径 + 参数, go-zero 的 -f config.yaml 传配置)
+  # 不用 bin 字段, 因为新版 air 不支持 args, 必须用 full_bin
+  full_bin = "./tmp/usercenter-rpc -f ./app/usercenter/cmd/rpc/etc/usercenter.yaml"
 
   # 延迟 (ms) - 文件变化后等多久再 build, 防止编辑器连续保存
   delay = 1000
@@ -42,9 +44,8 @@ tmp_dir = "tmp"
   # build 错误的 log 文件
   log = "build-errors.log"
 
-  # 增量 build (加快速度, go-zero 1.10+ 支持)
-  # 注意: 某些场景下增量 build 不准, 出问题就注释掉
-  arguments = []
+  # 增量 build (新版 air 用 args_bin 字段, 我们不用增量保持简单)
+  args_bin = []
 
 [log]
   # 显示时间戳
