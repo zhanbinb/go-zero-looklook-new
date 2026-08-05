@@ -42,7 +42,7 @@ start_one() {
     echo "[dev-up] ERROR: $bin not found, 先构建 (air 会自动 build, 或手动 ./scripts/dev-build.sh)"
     exit 1
   fi
-  "$bin" -f "$cfg" &
+  "$bin" -f "$cfg" >> "tmp/logs/${name}.log" 2>&1 &
   NAMES+=("$name")
   PIDS+=("$!")
   echo "[dev-up] started $name (pid $!)"
@@ -56,6 +56,7 @@ cleanup() {
   ./scripts/dev-down.sh >/dev/null 2>&1 || true
   wait 2>/dev/null || true
 }
+mkdir -p tmp/logs
 trap cleanup EXIT INT TERM
 
 for entry in "${SERVICES[@]}"; do
