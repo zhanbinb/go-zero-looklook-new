@@ -10,7 +10,7 @@ Prometheus:
 #Link Tracking
 Telemetry:
   Name: mqueue-job
-  Endpoint: http://jaeger:14268/api/traces
+  Endpoint: ./data/traces
   Sampler: 0.0
   Batcher: file
 

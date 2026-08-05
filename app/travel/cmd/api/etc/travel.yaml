@@ -12,7 +12,7 @@ Prometheus:
 #链路追踪
 Telemetry:
   Name: travel-api
-  Endpoint: http://jaeger:14268/api/traces
+  Endpoint: ./data/traces
   Sampler: 0.0
   Batcher: file
 
