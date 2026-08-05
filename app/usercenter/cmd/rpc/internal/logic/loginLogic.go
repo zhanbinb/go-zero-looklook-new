@@ -9,7 +9,6 @@ import (
 	"looklook/pkg/tool"
 	"looklook/pkg/xerr"
 
-	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -50,7 +49,7 @@ func (l *LoginLogic) Login(in *usercenter.LoginReq) (*usercenter.LoginResp, erro
 		UserId: userId,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(ErrGenerateTokenError, "GenerateToken userId : %d", userId)
+		return nil, xerr.Wrapf(ErrGenerateTokenError, "GenerateToken userId : %d", userId)
 	}
 
 	return &usercenter.LoginResp{
@@ -64,14 +63,14 @@ func (l *LoginLogic) loginByMobile(mobile, password string) (int64, error) {
 
 	user, err := l.svcCtx.UserModel.FindOneByMobile(l.ctx, mobile)
 	if err != nil && err != model.ErrNotFound {
-		return 0, errors.Wrapf(xerr.NewErrCode(xerr.DB_ERROR), "根据手机号查询用户信息失败，mobile:%s,err:%v", mobile, err)
+		return 0, xerr.Wrapf(xerr.NewErrCode(xerr.DB_ERROR), "根据手机号查询用户信息失败，mobile:%s,err:%v", mobile, err)
 	}
 	if user == nil {
-		return 0, errors.Wrapf(ErrUserNoExistsError, "mobile:%s", mobile)
+		return 0, xerr.Wrapf(ErrUserNoExistsError, "mobile:%s", mobile)
 	}
 
 	if !(tool.Md5ByString(password) == user.Password) {
-		return 0, errors.Wrap(ErrUsernamePwdError, "密码匹配出错")
+		return 0, xerr.Wrap(ErrUsernamePwdError, "密码匹配出错")
 	}
 
 	return user.Id, nil

@@ -10,7 +10,6 @@ import (
 	"looklook/pkg/xerr"
 
 	"github.com/jinzhu/copier"
-	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -34,10 +33,10 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 
 	user, err := l.svcCtx.UserModel.FindOne(l.ctx, in.Id)
 	if err != nil && err != model.ErrNotFound {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.DB_ERROR), "GetUserInfo find user db err , id:%d , err:%v", in.Id, err)
+		return nil, xerr.Wrapf(xerr.NewErrCode(xerr.DB_ERROR), "GetUserInfo find user db err , id:%d , err:%v", in.Id, err)
 	}
 	if user == nil {
-		return nil, errors.Wrapf(ErrUserNoExistsError, "id:%d", in.Id)
+		return nil, xerr.Wrapf(ErrUserNoExistsError, "id:%d", in.Id)
 	}
 	var respUser usercenter.User
 	_ = copier.Copy(&respUser, user)

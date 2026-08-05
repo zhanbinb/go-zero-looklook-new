@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlc"
@@ -185,7 +185,7 @@ func (m *defaultUserModel) DeleteSoft(ctx context.Context, session sqlx.Session,
 	data.DelState = globalkey.DelStateYes
 	data.DeleteTime = time.Now()
 	if err := m.UpdateWithVersion(ctx, session, data); err != nil {
-		return errors.Wrapf(errors.New("delete soft failed "), "UserModel delete err : %+v", err)
+		return fmt.Errorf("UserModel delete err : %+v", err)
 	}
 	return nil
 }
@@ -193,7 +193,7 @@ func (m *defaultUserModel) DeleteSoft(ctx context.Context, session sqlx.Session,
 func (m *defaultUserModel) FindSum(ctx context.Context, builder squirrel.SelectBuilder, field string) (float64, error) {
 
 	if len(field) == 0 {
-		return 0, errors.Wrapf(errors.New("FindSum Least One Field"), "FindSum Least One Field")
+		return 0, errors.New("FindSum Least One Field")
 	}
 
 	builder = builder.Columns("IFNULL(SUM(" + field + "),0)")
@@ -216,7 +216,7 @@ func (m *defaultUserModel) FindSum(ctx context.Context, builder squirrel.SelectB
 func (m *defaultUserModel) FindCount(ctx context.Context, builder squirrel.SelectBuilder, field string) (int64, error) {
 
 	if len(field) == 0 {
-		return 0, errors.Wrapf(errors.New("FindCount Least One Field"), "FindCount Least One Field")
+		return 0, errors.New("FindCount Least One Field")
 	}
 
 	builder = builder.Columns("COUNT(" + field + ")")

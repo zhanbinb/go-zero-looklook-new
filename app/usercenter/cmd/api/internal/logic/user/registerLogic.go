@@ -8,8 +8,8 @@ import (
 	"looklook/app/usercenter/model"
 
 	"github.com/jinzhu/copier"
-	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
+	"looklook/pkg/xerr"
 )
 
 type RegisterLogic struct {
@@ -35,7 +35,7 @@ func (l *RegisterLogic) Register(req types.RegisterReq) (*types.RegisterResp, er
 		AuthType: model.UserAuthTypeSystem,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "req: %+v", req)
+		return nil, xerr.Wrapf(err, "req: %+v", req)
 	}
 
 	var resp types.RegisterResp
