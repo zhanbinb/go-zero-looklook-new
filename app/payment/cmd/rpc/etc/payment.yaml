@@ -34,7 +34,7 @@ Cache:
 #pay success notify order-mq for kq(kafka pub sub)
 KqPaymentUpdatePayStatusConf:
   Brokers:
-    - kafka:9092
+    - 127.0.0.1:9094
   Topic: payment-update-paystatus-topic
 
 
