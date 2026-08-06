@@ -14,12 +14,12 @@
 | 服务 | API | RPC | Prometheus | 状态 |
 |------|-----|-----|------------|------|
 | order | 1001 | 2001 | 4002 (rpc) | ✅ userHomestayOrderList smoke 通 |
-| payment | 1002 | 2002 | 4005 (rpc) | 🔜 待用真 orderSn 测 (微信回调跳过) |
+| payment | 1002 | 2002 | 4005 (rpc) | 🔜 Brokers fix 后 publish 能落 Kafka, e2e 待 M2 验证 |
 | travel | 1003 | 2003 | 4006/4007 | ✅ 4 个 listing 接口全 smoke 通 |
 | usercenter | 1004 | 2004 | 4009 (rpc) | ✅ done in Step 1.5 |
-| order-mq | — | — | 4003 | 🔜 dev-up.sh fix 后用户查 log 内容 |
-| mqueue-scheduler | — | — | 4011 | 🔜 dev-up.sh fix 后用户查 log 内容 |
-| mqueue-job | — | — | 4010 | 🔜 dev-up.sh fix 后用户查 log 内容 |
+| order-mq | — | — | 4003 | ✅ Kafka Brokers fix 后 zk consumer init 通过 (v3.12) |
+| mqueue-scheduler | — | — | 4011 | ✅ cron `*/1 * * * *` 注册成功, 每分钟 fire demo job |
+| mqueue-job | — | — | 4010 | ✅ closeOrder 实验: CloseOrderTimeMinutes=1, 1 分钟后 trade_state=0→-1 静默生效 |
 
 ---
 
@@ -63,7 +63,7 @@ go-clean-arch-mysql   Up 2 weeks (healthy)← 别人的项目
 ### 🔜 M1.5 逐服务 smoke 测试 (5/7 通, ⑨⑩ 待验)
 见下表。
 
-### 🔜 M1.6 验证 ⑨⑩ log 后最终 commit (v3.9 dev-up fix + v3.10 docs 已发)
+### ✅ M1.6 验证 ⑨⑩ 完成 (2026-08-06: v3.12 brokers fix + closeOrder 实验成功)
 
 ---
 

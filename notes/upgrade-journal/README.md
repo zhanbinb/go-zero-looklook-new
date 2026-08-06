@@ -30,6 +30,9 @@ C. 纯库升级（4d 等）       ⏸️ P2     业务跑通后再做
 | 4b   | jwt v4 → v5             | ⏸️ deferred（go-zero 内部仍 v4）|
 | 4c   | go-redis v8 → v9        | ✅（业务通过 go-zero wrapper 已生效）|
 | 4d   | pkg/errors → std errors | 🚧 usercenter 试点完成，**全量暂缓**（等业务闭环后做）|
+| 99b  | step-05 M1.1-1.6 smoke 全活              | ✅ |
+| 99c  | step-06 异步事件深度学习 (api-rpc 链 + asynq + Kafka) | ✅ |
+| v3.12 | Kafka Brokers 真实 bug fix (kafka:9092→127.0.0.1:9094) | ✅ |
 
 ## 项目结构
 
@@ -50,6 +53,8 @@ go-zero-looklook-study/
     ├── step-04b-jwt-v5-deferred.md
     ├── step-04c-go-redis-v9-status.md
     ├── step-04d-pkg-errors-migration.md  # 试点完成，全量待业务跑通后
+    ├── step-05-business-baseline.md        # M1 working doc (✅ closed)
+    ├── step-06-async-event-deep-dive.md    # 异步事件学习 (api→rpc链 + asynq + Kafka)
     ├── step-99-cleanup-history.md
     ├── progress-day-1.md
     ├── cheatsheet-kafka.md
@@ -67,16 +72,25 @@ go-zero-looklook-study/
 
 ## 当前状态（M1 收尾中）
 
-**最近 2 个 commit (v3.9 + v3.10)**：
-- `scripts/dev-up.sh` 现在把每个服务的 stdout/stderr 重定向到 `tmp/logs/<name>.log`，排查有据可查
-- M1.1-1.5 烟测 5/7 通过：travel 4 接口 + order.userHomestayOrderList + usercenter login
-- 烟测中暴露的 smoke 入参错误已修正 + dev-scan-stubs.sh 工具落地
+**最近 commit (v3.12)**：
+- `scripts/dev-up.sh` 把服务 stdout/stderr 重定向到 `tmp/logs/<name>.log` (v3.9)
+- Kafka Brokers 修 `kafka:9092 → 127.0.0.1:9094` (v3.12, 真实 bug)
+- M1 全活闭环 5/5 服务 + closeOrder 实验验证 (60s 内 trade_state 0→-1)
+- 异步事件全部摸清 + asynq `{default}` 命名空间这一发现沉淀进 step-06
 
-**下一步（用户执行）**：
-1. `./scripts/dev-down.sh && ./scripts/dev-up.sh` (拉新启动一次)
-2. `tail -n 50 tmp/logs/order-mq.log` 等三个 mq 服务 log
-3. 根据 log 内容判断是真活 / 真有错 / 启动后无 output
-4. 把 3 段输出贴回，M1 收尾完成后进入 M2 RPC 联调
+**当前进度**：M1 已 **完全收尾**（包含 Kafka Brokers fix + closeOrder 实验）
+
+**M1 完成清单 (ground truth)**：
+- ✅ 11 个 binary 全编译
+- ✅ 11 个 binary 全活（dev-up.sh 起，tmp/logs/ 有 log）
+- ✅ 5 个 service smoke 全通（5/7，剩 commentList 空 stub 跳过 + payment 缺 e2e）
+- ✅ M1.6 实验验证 ⑨⑩ 真活:
+   - M1-1: `asynq:{default}:scheduled` ZSET 有 defer 任务 (id + process_at 一致)
+   - M1-3: CloseOrderTimeMinutes=1, trade_state 60s 内 0→-1
+- ✅ Kafka Brokers 修 (order-mq kq consumer + payment-rpc Push 都通)
+
+**下一步 (M2 候选)**：跨 5 服务一笔订单联通 (browse → order → pay → settle)
+详细规划见 [step-replan-2026-08-05.md](step-replan-2026-08-05.md) § 2 视角 A。
 
 完整细节见 [`step-05-business-baseline.md`](step-05-business-baseline.md)。
 
