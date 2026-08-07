@@ -80,7 +80,8 @@ else
     for k in $D_KEYS; do
         # 提取 Type 字段 (asynq 编码在 msg 字段里)
         TYPE=$($REDIS HGET "$k" 'state' 2>/dev/null || echo "?")
-        TASK_TYPE=$($REDIS HGET "$k" 'msg' 2>/dev/null | cut -c1-50)
+        # msg 字段是 asynq 编码的二进制, 用 head -c (按字节) + tr 去掉非 printable
+        TASK_TYPE=$($REDIS HGET "$k" 'msg' 2>/dev/null | head -c 60 | tr -cd '[:print:][:space:]' | head -c 50)
         echo "    $k  state=$TYPE  msg[:50]=$TASK_TYPE..."
     done
 fi
