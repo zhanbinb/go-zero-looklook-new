@@ -32,6 +32,8 @@ C. 纯库升级（4d 等）       ⏸️ P2     业务跑通后再做
 | 4d   | pkg/errors → std errors | 🚧 usercenter 试点完成，**全量暂缓**（等业务闭环后做）|
 | 99b  | step-05 M1.1-1.6 smoke 全活              | ✅ |
 | 99c  | step-06 异步事件深度学习 (api-rpc 链 + asynq + Kafka) | ✅ |
+| 99d  | step-07 M2 e2e working doc (跨 5 服务一笔订单) | ✅ (链路通, D 数据待生产化) |
+| 99e  | step-08 完整下单流程参考文档 (真实业务 + 模拟对照) | ✅ |
 | v3.12 | Kafka Brokers 真实 bug fix (kafka:9092→127.0.0.1:9094) | ✅ |
 
 ## 项目结构
@@ -54,6 +56,9 @@ go-zero-looklook-study/
     ├── step-04c-go-redis-v9-status.md
     ├── step-04d-pkg-errors-migration.md  # 试点完成，全量待业务跑通后
     ├── step-05-business-baseline.md        # M1 working doc (✅ closed)
+    ├── step-06-async-event-deep-dive.md    # 异步事件学习
+    ├── step-07-m2-e2e.md                   # M2 e2e working doc
+    ├── step-08-complete-order-flow.md       # 下单完整流程 (参考文档)
     ├── step-06-async-event-deep-dive.md    # 异步事件学习 (api→rpc链 + asynq + Kafka)
     ├── step-99-cleanup-history.md
     ├── progress-day-1.md
