@@ -109,7 +109,7 @@ ES 唯一作用：
 # 拿 token
 TOKEN=$(curl -s -X POST http://127.0.0.1:1004/usercenter/v1/user/login \
   -H 'Content-Type: application/json' \
-  -d '{"mobile":"13800138000","password":"test123456"}' \
+  -d '{"mobile":"18721432599","password":"test123456"}' \
   | jq -r .data.accessToken)
 echo "TOKEN=$TOKEN"
 ```

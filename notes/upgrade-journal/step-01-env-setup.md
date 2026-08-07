@@ -108,7 +108,7 @@ WARN[0000] /Users/.../docker-compose-env.yml: the attribute `version` is obsolet
 
 **现象**：
 ```
-$ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/register -d '{"mobile":"13800138000","password":"test123456"}'
+$ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/register -d '{"mobile":"18721432599","password":"test123456"}'
 {"code":100005,"msg":"数据库繁忙,请稍后再试"}
 ```
 

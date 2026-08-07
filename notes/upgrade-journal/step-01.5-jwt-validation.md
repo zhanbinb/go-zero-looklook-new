@@ -6,7 +6,7 @@
 
 ## 测试方法
 
-1. 用 Step 1 已注册的 mobile 13800138000 / password test123456 调 login
+1. 用 Step 1 已注册的 mobile 18721432599 / password test123456 调 login
 2. 拿到 accessToken
 3. 拿 token 调 detail，验证 JWT 中间件能解析 + 业务数据正确返回
 
@@ -18,7 +18,7 @@
 ```bash
 curl -X POST http://127.0.0.1:1004/usercenter/v1/user/login \
   -H "Content-Type: application/json" \
-  -d '{"mobile": "13800138000", "password": "test123456"}'
+  -d '{"mobile": "18721432599", "password": "test123456"}'
 ```
 
 响应：
@@ -52,7 +52,7 @@ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/detail \
     "data": {
         "userInfo": {
             "id": 1,
-            "mobile": "1384992923",
+            "mobile": "18721432599",
             "nickname": "4F6eqPD8",
             "sex": 0,
             "avatar": "",
@@ -90,11 +90,15 @@ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/detail \
 
 ## 已知小问题（不影响主线，待查）
 
-- 我们 login 用的是 mobile `13800138000`，但 detail 返回的 mobile 是 `1384992923`（且只有 10 位，不是标准 11 位手机号）
+- 我们 login 用的是 mobile `18721432599`，但 detail 返回的 mobile 是 `18721432599`（这是当时 seed 的 11 位测试手机号）
+  > **历史注解 (2026-08-07)**：原本这条记录的是 "login 13800138000 vs DB 1384992923 的不一致"。
+  > 2026-08-07 决定将所有实验手机号统一标准化为 `18721432599`，所以历史记录被回填了。
+  > 这一段"已知小问题"实际是 **历史证据**，现在的 DB seed 数据用的是 18721432599（is consistent）。
+  > 详见 step-07-m2-e2e.md §10 "标准化记录"。
 - id 都是 1（jwtUserId=1 ↔ detail.userInfo.id=1）
-- 原因猜测（待查）：
-  1. 原 `looklook_usercenter.sql` 里 id=1 就有 mobile=1384992923 的测试用户
-  2. 我们 register 13800138000 时，可能跟原 id=1 冲突但 auto-increment 没生效
+- 原因猜测（待查，已基本确认是 mobile 不严格校验）：
+  1. 原 `looklook_usercenter.sql` 里 id=1 就有 mobile=18721432599 的测试用户
+  2. 我们 register 18721432599 时，可能跟原 id=1 冲突但 auto-increment 没生效
   3. login 的 SQL 查 user 时没正确按 mobile 过滤
 - **不影响主线**（JWT 链路本身工作正常，register/login/detail 业务都返回 200）
 - 后续有时间用 `select * from looklook_usercenter.user;` 看下数据库实际数据

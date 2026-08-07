@@ -111,7 +111,7 @@ $ go build -o /tmp/usercenter-api-migrated ./app/usercenter/cmd/api
 
 ### Smoke test
 ```
-$ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/login -d '{"mobile":"13800138000","password":"test123456"}'
+$ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/login -d '{"mobile":"18721432599","password":"test123456"}'
 {"code":200,"msg":"OK","data":{"accessToken":"eyJhbGc...",...}}
 
 $ curl -X POST http://127.0.0.1:1004/usercenter/v1/user/detail -H "Authorization: Bearer $TOKEN" -d '{}'
