@@ -25,6 +25,17 @@ login → browse → order → (pay) → notify → (settle / close)
 
 ---
 
+## 现在有便捷脚本 (2026-08-07 加)
+
+不用记下面的所有 raw 命令, 直接用 2 个封装好的脚本:
+
+| 任务 | 旧 (手工 docker exec) | 新 (封装脚本) |
+|------|---------------------|---------------|
+| 推 Kafka 模拟支付 | `docker exec kafka ... kafka-console-producer ...` (50+ 字符) | `./scripts/dev-kafka-push-pay.sh ORDER_SN=HSO...` |
+| 看一笔订单全景 | 要跑 7-8 条命令 | `./scripts/dev-mq-trace.sh ORDER_SN=HSO...` |
+
+下面 doc 里**保留** raw 命令当教学用. 真跑请用脚本.
+
 ## 跑 M2 之前 — Pre-flight checklist
 
 - [ ] 11 个 binary 全活（`./scripts/dev-status.sh`）
