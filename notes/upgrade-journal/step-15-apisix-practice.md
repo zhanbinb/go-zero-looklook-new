@@ -317,37 +317,62 @@ go-zero (1004)
 
 ---
 
-## §5 Step 4 - Dashboard 探索 (中间状态, 未解决)
+## §5 Step 4 - Dashboard 探索 (✅ v3.31 已修复)
 
 ### 5.1 期望
 
 9000 dashboard: 看 upstream/route/consumer, 用 UI 改 (create/edit/delete).
 
-### 5.2 已解决
+### 5.2 已解决 (v3.31)
 
-- dashboard 启动成功 (解决了 conf: 包裹、ENTRYPOINT、socat 重定向)
-- dashboard 能看到**上游列表** (4 个, 名称描述空白 → 加了 name/desc 后 OK)
-- 路由/消费者都能看到
+**真凶**: dashboard conf 缺 `apisix.base_url` + `apisix.admin_key` 这 2 个字段!
 
-### 5.3 未解决
+我们之前一直怀疑 authentication.users / 密码哈希 / schema 字段名,
+但**真正的问题是 dashboard 不知道如何调 APISIX Admin API**:
+- dashboard UI 操作 (点击下线/编辑路由/创建 consumer) 都通过代理转发到 APISIX Admin API (9180)
+- 没配 `apisix.base_url` 和 `admin_key` → dashboard 没法发起有效请求
+- 读操作侥幸能通 (可能是 dashboard 自己读 etcd), 写操作全部 401/无声失败
+- 用户登录成功 → 点菜单 → 后端要调 Admin API 拿菜单数据 → 失败 → redirect 到 login
 
-- **admin/admin 登录返回 10000 (username or password error)**
-- 二进制里没有 `bcrypt` / `compareHashAndPassword`, 所以密码不是 bcrypt
-- 字段名试过 `username` 和 `name`, 都返回 10000
-- YAML 格式试过 list 和 map (`map[string]User`), 都返回 10000
-- 怀疑 viper 没解析到 users 段, 但启动日志没报 schema 验证错误 (viper 静默忽略未知字段)
+**修复** (deploy/apisix/dashboard_conf.yaml 加 2 段):
+```yaml
+apisix:
+    base_url: http://apisix:9180/apisix
+    admin_key: edd1c9f034325f303f3f3f3f3f3f3f3f
 
-### 5.4 已知的可能原因 (待排查)
+authentication:
+    secret: edd1c9f034325f303f3f3f3f3f3f3f3f
+    expire_time: 3600
+    users:
+        - username: admin
+          password: admin
+```
 
-1. dashboard 启动时 viper 解析失败但没打印错误 (conf 字段名跟 schema 不匹配)
-2. password 字段需要特殊处理 (明文 vs 哈希)
-3. dashboard 3.0.0 实际从 etcd 读用户, 不从 conf 读
+**验证** (v3.31 之后的 access.log):
+```
+POST  /apisix/admin/user/login         -> 200 ✅
+GET   /apisix/admin/consumers           -> 200 ✅
+GET   /apisix/admin/upstreams           -> 200 ✅
+GET   /apisix/admin/routes              -> 200 ✅
+PATCH /apisix/admin/routes/4 (toggle)   -> 200 ✅ ← 之前完全没反应!
+```
 
-### 5.5 dashboard 探索的整体评价
+dashboard 现在既能"看"又能"操作".
 
-- 学习价值: **很高**. 暴露了 alpine musl 解析坑、镜像 ENTRYPOINT 坑、conf schema 坑、socat 转发等真实部署问题
-- 生产价值: dashboard 是 dev/ops 工具, 不能用**不影响** APISIX 核心功能. Admin API + 我们的 4 个脚本完全够用
-- 后续: 等有时间再深入, 或者升 dashboard 版本
+### 5.3 反思 (避免下次再踩)
+
+- **dashboard 二进制里的 `Authentication` 字段不接受 bcrypt 哈希**, 也不需要 map 格式, list + username 即可 (我们之前猜错方向)
+- **dashboard 启动时把 users 写进 etcd** (`/apisix/manager-api/.../users`), 登录时从 etcd 读
+- **但如果 dashboard 不知道怎么调 Admin API (apisix.base_url 没配), 即使能登录, 写操作也失败**
+- **viper 解析 authentication 段即使缩进有 warning (在 conf: 之外) 也能读**, 实际 schema 没我们想的严格
+
+### 5.4 dashboard 的整体价值
+
+- ✅ UI 配 upstream/route/consumer/SSL/插件 (可视化, 比 curl 友好)
+- ✅ 实时生效 (Admin API 写 etcd, APISIX watch etcd 立即感知)
+- ✅ RBAC (用户/角色/权限管理)
+- ✅ 监控/审计 (操作日志, 可以看 access.log)
+- 适合 ops 日常配置变更, 降低出错的概率
 
 ---
 
