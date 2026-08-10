@@ -1,22 +1,17 @@
 # APISIX 3.10 config - dev 模式
-# 跟 docker-compose.yml 的 etcd 配对
+# ★ 3.x 配置结构 (和 2.x 不一样!):
+#   - etcd 必须在 deployment.etcd.host 下, 值是完整 URL (http://host:2379)
+#     顶层 etcd: / plugins: 是 2.x 写法, 3.x 会忽略 → 回退 127.0.0.1:2379 → 连不上
+#   - plugins 白名单在 apisix.plugins 下 (不写 = 全部内置插件启用)
 # host 访问:
-#   - Admin API: http://localhost:9180 (POST/GET/PUT 配 route)
+#   - Admin API: http://localhost:9180 (PUT/GET 配 route)
 #   - HTTP proxy: http://localhost:9080 (业务流量)
 #   - Dashboard: http://localhost:9000 (UI 配, 默认 admin/admin)
-#
-# Admin key: 我们的 dev key, 实际生产要换
 
 apisix:
   node_listen: 9080                # 业务 proxy 端口
   enable_admin: true                # 启 Admin API
   enable_dev_mode: true             # dev mode, 单节点 OK
-
-  # 默认路由表 (为空, 我们用 Admin API 配)
-  routes: []
-  upstreams: []
-  services: []
-  consumers: []
 
 deployment:
   role: traditional                 # 传统模式 (vs 数据平面/控制平面分离)
@@ -29,20 +24,7 @@ deployment:
         role: admin
     allow_admin:
       - 0.0.0.0/0                          # dev 允许任何 IP 调 Admin API (生产限制 IP)
-
-etcd:
-  prefix: /apisix                            # etcd key 前缀 (避免污染 host 已有 etcd)
-  endpoints:
-    - host.docker.internal:2379              # 复用 host 上的 etcd (v3.5.21)
-
-plugins:                                    # 启用的 plugin (按需)
-  - jwt-auth                                # ★ 我们最关心这个
-  - key-auth
-  - limit-count                             # 限流 (替代 nginx limit_req)
-  - limit-req
-  - limit-conn
-  - cors                                    # 替代 nginx add_header
-  - ip-restriction                          # 替代 nginx allow/deny
-  - prometheus
-  - response-rewrite
-  - fault-injection
+  etcd:
+    host:                                   # ★ 3.x: 完整 URL + deployment 下
+      - http://host.docker.internal:2379    # 复用 host 上的 etcd (v3.5.21)
+    prefix: /apisix                         # etcd key 前缀 (避免污染 host 已有 etcd)

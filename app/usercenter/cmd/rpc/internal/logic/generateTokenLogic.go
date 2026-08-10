@@ -5,12 +5,14 @@ import (
 	"looklook/pkg/ctxdata"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"looklook/app/usercenter/cmd/rpc/internal/svc"
 	"looklook/app/usercenter/cmd/rpc/pb"
 
-	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/golang-jwt/jwt/v4"
+
 	"looklook/pkg/xerr"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type GenerateTokenLogic struct {
@@ -48,6 +50,7 @@ func (l *GenerateTokenLogic) getJwtToken(secretKey string, iat, seconds, userId 
 	claims["exp"] = iat + seconds
 	claims["iat"] = iat
 	claims[ctxdata.CtxKeyJwtUserId] = userId
+	claims["key"] = "looklook"   // APISIX jwt-auth 用它匹配 Consumer (固定值, 代表签发方 usercenter)
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Claims = claims
 	return token.SignedString([]byte(secretKey))
