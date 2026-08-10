@@ -15,9 +15,13 @@ conf:
     access_log:
       level: info
 
-  authentication:
-    expire_time: 3600
-    secret: "i-am-a-secret"
-    users:                  # ★ map[string]User 格式, 不是 list!
-      admin:                # key 就是用户名
-        password: admin     # 只剩 password 字段
+authentication:
+  secret: edd1c9f034325f303f3f3f3f3f3f3f3f
+  expire_time: 3600
+  users:
+    - username: admin
+      password: admin
+
+apisix:
+    base_url: http://apisix:9180/apisix
+    admin_key: edd1c9f034325f303f3f3f3f3f3f3f3f
