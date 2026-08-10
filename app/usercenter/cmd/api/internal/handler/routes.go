@@ -23,6 +23,20 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/user/login",
 				Handler: user.LoginHandler(serverCtx),
 			},
+			{
+				// ★ nginx auth_request 子请求的端点 (由 nginx 内部调用, 不走 WithJwt)
+				// 详见 internal/handler/authCheckHandler.go
+				// 注意: nginx auth_request 子请求默认是 GET, 所以这里要 GET+POST 都注册
+				Method:  http.MethodGet,
+				Path:    "/auth_check",
+				Handler: AuthCheckHandler(serverCtx),
+			},
+			{
+				// 同一 handler, 兼容 POST 调用 (比如外部直接 curl)
+				Method:  http.MethodPost,
+				Path:    "/auth_check",
+				Handler: AuthCheckHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/usercenter/v1"),
 	)
