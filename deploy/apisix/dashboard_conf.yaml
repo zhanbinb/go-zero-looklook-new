@@ -1,0 +1,21 @@
+# APISIX Dashboard 3.0.0 配置
+# 关键: 3.0.0 schema 强制要 'conf:' 顶层包裹 (跟普通 APISIX config.yaml 不同!)
+# 没有 'conf:' 包裹 → parser 找不到 etcd section → InitETCDClient 拿 nil → panic
+#
+# listen 绑 0.0.0.0:8080 (容器内), 配 port mapping 9000:8080
+# etcd 走 host.docker.internal:2379 (host 上复用的 etcd v3.5.21)
+
+conf:
+  listen:
+    host: 0.0.0.0
+    port: 8080
+
+  etcd:
+    endpoints:
+      - host.docker.internal:2379
+
+  log:
+    error_log:
+      level: warn
+    access_log:
+      level: info

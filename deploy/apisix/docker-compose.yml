@@ -1,0 +1,38 @@
+# APISIX dev setup - 复用 host 上已跑的 etcd (v3.5.21, port 2379)
+# 3 个 service: apisix (主体) + apisix-dashboard (UI) + 你 host 上的 etcd
+
+services:
+  apisix:
+    image: apache/apisix:3.10.0-debian
+    container_name: apisix
+    volumes:
+      - ./config.yaml:/usr/local/apisix/conf/config.yaml:ro
+    ports:
+      - "9080:9080"
+      - "9180:9180"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - apisix-net
+    restart: unless-stopped
+
+  apisix-dashboard:
+    image: apache/apisix-dashboard:3.0.0-alpine
+    container_name: apisix-dashboard
+    command: ["-p", "/usr/local/apisix-dashboard", "-c", "/usr/local/apisix-dashboard/conf/conf.yaml"]
+    volumes:
+      - ./dashboard_conf.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+    ports:
+      - "9000:8080"   # dashboard 容器内 8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - apisix-net
+    depends_on:
+      - apisix
+    restart: unless-stopped
+
+networks:
+  apisix-net:
+    name: apisix-net
+    driver: bridge
