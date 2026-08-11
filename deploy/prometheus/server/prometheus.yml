@@ -1,5 +1,5 @@
 global:
-  scrape_interval:
+  scrape_interval: 15s
   external_labels:
     monitor: 'codelab-monitor'
 
@@ -11,77 +11,77 @@ scrape_configs:
 
   - job_name: 'order-api'
     static_configs:
-      - targets: [ 'looklook:4001' ]
+      - targets: [ 'host.docker.internal:4001' ]
         labels:
           job: order-api
           app: order-api
           env: dev
   - job_name: 'order-rpc'
     static_configs:
-      - targets: [ 'looklook:4002' ]
+      - targets: [ 'host.docker.internal:4002' ]
         labels:
           job: order-rpc
           app: order-rpc
           env: dev
   - job_name: 'order-mq'
     static_configs:
-      - targets: [ 'looklook:4003' ]
+      - targets: [ 'host.docker.internal:4003' ]
         labels:
           job: order-mq
           app: order-mq
           env: dev
   - job_name: 'payment-api'
     static_configs:
-      - targets: [ 'looklook:4004' ]
+      - targets: [ 'host.docker.internal:4004' ]
         labels:
           job: payment-api
           app: payment-api
           env: dev
   - job_name: 'payment-rpc'
     static_configs:
-      - targets: [ 'looklook:4005' ]
+      - targets: [ 'host.docker.internal:4005' ]
         labels:
           job: payment-rpc
           app: payment-rpc
           env: dev
   - job_name: 'travel-api'
     static_configs:
-      - targets: [ 'looklook:4006' ]
+      - targets: [ 'host.docker.internal:4006' ]
         labels:
           job: travel-api
           app: travel-api
           env: dev
   - job_name: 'travel-rpc'
     static_configs:
-      - targets: [ 'looklook:4007' ]
+      - targets: [ 'host.docker.internal:4007' ]
         labels:
           job: travel-rpc
           app: travel-rpc
           env: dev
   - job_name: 'usercenter-api'
     static_configs:
-      - targets: ['looklook:4008']
+      - targets: ['host.docker.internal:4008']
         labels:
           job: usercenter-api
           app: usercenter-api
           env: dev
   - job_name: 'usercenter-rpc'
     static_configs:
-      - targets: ['looklook:4009']
+      - targets: ['host.docker.internal:4009']
         labels:
           job: usercenter-rpc
           app: usercenter-rpc
           env: dev
   - job_name: 'mqueue-job'
     static_configs:
-      - targets: [ 'looklook:4010' ]
+      - targets: [ 'host.docker.internal:4010' ]
         labels:
           job: mqueue-job
           app: mqueue-job
           env: dev
   - job_name: 'mqueue-scheduler'
     static_configs:
-      - targets: [ 'looklook:4011' ]
+      - targets: [ 'host.docker.internal:4011' ]
         labels:
           job: mqueue-scheduler
           app: mqueue-scheduler
