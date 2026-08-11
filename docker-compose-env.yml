@@ -17,6 +17,8 @@ services:
       - "5778:5778"
       - "16686:16686"
       - "14268:14268"
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
       - "9411:9411"
     environment:
       - SPAN_STORAGE_TYPE=elasticsearch

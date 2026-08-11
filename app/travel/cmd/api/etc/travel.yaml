@@ -12,9 +12,9 @@ Prometheus:
 #链路追踪
 Telemetry:
   Name: travel-api
-  Endpoint: ./data/traces
-  Sampler: 0.0
-  Batcher: file
+  Endpoint: 127.0.0.1:4318
+  Sampler: 1.0
+  Batcher: otlphttp
 
 Log:
   ServiceName: travel-api
