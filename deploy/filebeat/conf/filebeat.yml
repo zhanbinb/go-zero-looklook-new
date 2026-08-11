@@ -2,7 +2,17 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
+      - /var/log/looklook/*.log
+    fields:
+      log_type: looklook_business
+    fields_under_root: true
+  - type: log
+    enabled: true
+    paths:
       - /var/lib/docker/containers/*/*-json.log
+    fields:
+      log_type: docker_container
+    fields_under_root: true
 
 filebeat.config:
   modules:
@@ -16,7 +26,6 @@ processors:
 output.kafka:
   enabled: true
   hosts: ["kafka:9092"]
-  #要提前创建topic
   topic: "looklook-log"
   partition.hash:
     reachable_only: true

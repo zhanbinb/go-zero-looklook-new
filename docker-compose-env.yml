@@ -138,6 +138,7 @@ services:
       # 如snap安装的docker，则为/var/snap/docker/common/var-lib-docker/containers - Example if docker is installed by Snap /var/snap/docker/common/var-lib-docker/containers
       # - /var/snap/docker/common/var-lib-docker/containers:/var/lib/docker/containers
       - /var/lib/docker/containers:/var/lib/docker/containers
+      - ./tmp/logs:/var/log/looklook:ro
     networks:
       - looklook_net
     depends_on:
