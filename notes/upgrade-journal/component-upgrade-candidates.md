@@ -11,7 +11,7 @@
 | 候选 | 适用度 | 决策 | 备注 |
 |------|--------|------|------|
 | **nginx + auth_request** | ⭐⭐⭐⭐ | 当前 | 现成 `deploy/nginx/conf.d/looklook-gateway.conf` |
-| APISIX | ⭐⭐⭐⭐⭐ | 评估中 | Apache 顶级项目，dashboard + 100+ 插件，go-zero 生态友好 |
+| APISIX | ⭐⭐⭐⭐⭐ | ✅ 已实战 | v3.26-v3.32: 4 upstream + 7 route + dashboard 修复；当前与 nginx 对照 |
 | Kong | ⭐⭐⭐ | 不优先 | OpenResty 调试链不顺 |
 | Higress | ⭐⭐⭐ | 不优先 | 阿里体系 |
 | Traefik | ⭐⭐⭐⭐ | 不优先 | k8s 友好，单机可省事 |
@@ -40,7 +40,7 @@
 ### ⑫ 链路追踪 ch 12
 | 候选 | 适用度 | 决策 | 备注 |
 |------|--------|------|------|
-| **jaeger**（现但 Telemetry 错配）| ⭐⭐⭐ | 改造 | go-zero 1.10 已不支持 jaeger 直连 |
+| **jaeger**（现，OTLP 已通）| ⭐⭐⭐ | ✅ 已完成 | v3.35: Jaeger 1.63 + OTLP HTTP，5 服务 trace |
 | OpenTelemetry Collector → Jaeger/Tempo | ⭐⭐⭐⭐⭐ | **目标方案** | 厂商中立，主流 |
 | SigNoz | ⭐⭐⭐⭐ | 不优先 | 单栈体验好，但与现有 prom/grafana 重叠 |
 
@@ -63,11 +63,11 @@
 |-------|----------|------|
 | M1    | 全部 5 服务 yaml | 看 Telemetry / Prometheus 字段是否合理 |
 | M2    | 跨服务 RPC 配置 | 看 RPC 错误码、retry、timeout 配置 |
-| M3    | 1 条 e2e 业务 | 看 kafka topic 是否合理 |
-| ch 12 | Telemetry | **主要改造点**：上 OTel Collector |
-| ch 11 | filebeat 配置 | 评估 Loki 替换 |
-| ch 13 | prometheus.yml | 看 scrape target 与端口一致 |
-| ch 2  | nginx | 评估 APISIX |
+| M3/M4 | e2e 回归基线 (dev-e2e.sh) | ✅ 8/8 PASS，见 step-20 |
+| ch 12 | Telemetry | ✅ OTLP HTTP 已通 (v3.35/v3.36) |
+| ch 11 | filebeat 配置 | ✅ ELK 已通 (v3.37-v3.39)，Loki 留作备选 |
+| ch 13 | prometheus.yml | ✅ 12 target + Grafana (v3.33/v3.34) |
+| ch 2  | nginx | ✅ APISIX 实战完成 (v3.26-v3.32) |
 
 ## 决策原则
 
@@ -96,6 +96,10 @@
 | 2026-08-05 | dev-up.sh log redirect | ✅ 实施 (v3.9) | 原脚本没 stdout 重定向, 误以为 order-mq 未起 |
 | 2026-08-05 | seed-travel.sql | ✅ 实施 (v3.10) | 3 民宿 + 1 店铺 + 3 评论足以 smoke 4 个 listing 接口 |
 | 2026-08-05 | dev-scan-stubs.sh | ✅ 实施 (v3.10) | 扫 logic 空 stub 工具, 防止凭印象拼 smoke 入参 |
-| 2026-08-05 | 4d pkg/errors 全量 | ⏸️ 暂缓 (用户指示) | 等 M1+M2+M3 后做 |
+| 2026-08-10 | APISIX 实战 + dashboard 修复 | ✅ 实施 (v3.26-v3.32) | 4 upstream + 7 route + consumer |
+| 2026-08-11 | ch 13 监控 | ✅ 跑通 (v3.33/v3.34) | Prometheus 12 target + Grafana 7 panel |
+| 2026-08-11 | ch 12 追踪 | ✅ 跑通 (v3.35/v3.36) | Jaeger 1.63 + OTLP HTTP |
+| 2026-08-11 | ch 11 日志 | ✅ 跑通 (v3.37/v3.39) | ELK 保留，Loki/Vector 留作对照评估 |
+| 2026-08-11 | M3/M4 e2e 回归 | ✅ 实施 (dev-e2e.sh) | 8/8 PASS，step-20 |
+| 2026-08-11 | 4d pkg/errors 全量 | 🔜 当前 P1 | 前置 M1-M4 已满足，用 dev-e2e.sh 回归 |
 | 待评估 | docker dev mode (ch 03) | ⏸️ 暂缓 | 现有 host 模式够用, MacBook Air 内存约束 |
-

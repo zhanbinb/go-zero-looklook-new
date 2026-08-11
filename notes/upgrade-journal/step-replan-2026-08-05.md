@@ -1,8 +1,8 @@
 # 重新规划：从"库升级优先"切换到"业务闭环优先"
 
 > 日期：2026-08-05  
-> 状态：✅ 已确定，正在执行 (v3.10 已 commit + push)
-> 最近更新：M1 服务 smoke 5/7 通，⑨⑩ 日志验证待用户执行  
+> 状态：✅ 已确定，A/B 视角已完成 (2026-08-11 更新, v3.39+)
+> 最近更新：M1-M4 业务闭环收尾 (dev-e2e.sh 回归 8/8 PASS)，ch 11/12/13 三件套跑通，下一步 Step 8 (4d 全量)
 > 触发：今天把 `doc/chinese/` 下 15 章教程完整扫了一遍，发现业务系统只跑通 1/5
 
 ---
@@ -16,7 +16,7 @@
 | #  | 章节               | 状态                            | 备注 |
 |----|--------------------|---------------------------------|------|
 | 01 | 开发环境搭建       | ✅ Step 1                       | 11 中间件 + 4 库数据 + topic |
-| 02 | nginx 网关         | ❌ 没做                         | deploy/nginx/conf.d/ 在，未跑 |
+| 02 | nginx 网关         | ✅ nginx auth_request + APISIX 实战 + dashboard 修复 | v3.24-v3.32，step-09~16 |
 | 03 | 鉴权服务           | ✅（嵌在 usercenter）           | JWT 中间件已验证 |
 | 04 | 用户服务           | ✅ smoke 通过                   | usercenter |
 | 05 | 民宿服务           | ✅ M1 smoke 全活 (homestayList/detail/businessList/BussinessList 通) | travel |
@@ -24,10 +24,10 @@
 | 07 | 支付服务           | ✅ M1 (Kafka Brokers 已修) + payment-rpc Push 待 M2 联通验证 | payment |
 | 08 | 消息/延迟/定时队列 | ✅ M1 完成: asynq 4 类事件摸清 + kafka Brokers 修复 + closeOrder e2e 验证 | kq (kafka) + asynq |
 | 09 | 分布式事务         | N/A（本项目不用 dtm）            | — |
-| 10 | 错误处理           | 🚧 Step 4d 进行中（**先暂停**）  | usercenter 试点完成 |
-| 11 | 日志收集           | ⏳ 中间件全起，未接业务           | filebeat→kafka→go-stash→ES→kibana |
-| 12 | 链路追踪           | ⏳ jaeger 在跑，Telemetry 错配   | Endpoint 还指 jaeger URL，Batcher=file |
-| 13 | 服务监控           | ⏳ prom/grafana 未验证           | prometheus.yml 在 deploy/ |
+| 10 | 错误处理           | 🚧 试点完成，全量待做（下一步 P1）| usercenter 试点完成 |
+| 11 | 日志收集           | ✅ v3.37-v3.39                 | filebeat 抓 host 日志 → Kafka → go-stash → ES → Kibana |
+| 12 | 链路追踪           | ✅ v3.35-v3.36                 | Jaeger 1.63 + OTLP HTTP，5 服务 trace |
+| 13 | 服务监控           | ✅ v3.33-v3.34                 | Prometheus 12 target + Grafana 7 panel |
 | 14 | 部署环境搭建       | ❌                              | gitlab+jenkins+harbor+k8s（本期大概率不做）|
 | 15 | 发布到 k8s         | ❌                              | jenkins pipeline（依赖 14）|
 
@@ -198,19 +198,19 @@ M1 ✅ 11 个服务全活 ─► M2 联调打通 ─► M3 最小 e2e ─► M4 
   │    - 链路全通 (Kafka + asynq 都被消费)
   │    - 详见 step-07 工作 doc
   │    - 完整流程图 + 故障排查 见 step-08
-  └ M3：依赖真实业务 (微信支付等)
-  ├ M2：RPC 联调
-  ├ M3：1 条 e2e
-  └ M4：业务代码读懂 ch 4-8
+  └ M3/M4：dev-e2e.sh 回归基线 ✅ (8/8 PASS, 2026-08-11)
+       - happy path: login → browse → order → kafka pay → trade_state 0→1
+       - defer close: 验证 enqueue；等待验证用 E2E_CLOSE_VERIFY=1
+       - 详见 step-20
 - Step 6：B 基础设施贯通（ch 11/12/13）
-  ├ ch 12 优先：OTel collector 替代 jaeger
-  ├ ch 11：filebeat→Loki 或保留 ELK
-  └ ch 13：prom + grafana 联调
+  ├ ch 13 监控 ✅ v3.33/v3.34
+  ├ ch 12 追踪 ✅ v3.35/v3.36 (Jaeger + OTLP)
+  └ ch 11 日志 ✅ v3.37/v3.39 (ELK 保留，Loki/Vector 留作对照评估)
 - Step 7：网关（ch 2）
-  ├ 7.1：先 nginx 跑通（ch 2 原方案）
-  └ 7.2：评估 APISIX 替换
+  ├ 7.1 nginx auth_request 实战 ✅ v3.24/v3.25
+  └ 7.2 APISIX 实战 + dashboard 修复 ✅ v3.26-v3.32
 - Step 8：4d 全量（在业务闭环后做，价值最大）
-  └ 因为跑通后可以做端到端 smoke test 验证
+  └ 🔜 当前 P1：前置 M1-M4 已满足，用 dev-e2e.sh 做端到端回归
 - Step 9+：可选（生产部署 ch 14-15 / jwt v5 重试 / asynq 升级）
 ```
 
@@ -219,11 +219,11 @@ M1 ✅ 11 个服务全活 ─► M2 联调打通 ─► M3 最小 e2e ─► M4 
 | 决策 | 内容 |
 |------|------|
 | 起点 ① (M1) | ✅ v3.12 已完成 (含 Kafka Brokers fix + asynq 实验) |
-| 起点 ② (ch 11 日志)  | ⏸️ 等 M1 完成后 |
-| 起点 ③ (ch 12 OTel)  | ⏸️ 等 M1 完成后 |
-| 4d 全量              | ⏸️ 等 M1+M2+M3 后（业务跑通了再迁移才有真实回归）|
-| APISIX 评估          | ⏸️ 等 M5 / ch 2 实施时 |
-| nginx 当前是否启用    | ⏸️ 视 M1 用 1001-1004 直连是否够用 |
+| 起点 ② (ch 11 日志)  | ✅ v3.37-v3.39 完整跑通 |
+| 起点 ③ (ch 12 追踪)  | ✅ v3.35-v3.36 完整跑通 |
+| M3/M4 关账           | ✅ dev-e2e.sh 回归 8/8 PASS (2026-08-11) |
+| 4d 全量              | 🔜 当前 P1（前置已满足，用 e2e 脚本回归）|
+| APISIX 评估          | ✅ 已完成实战 + 对比，保留 nginx 作为当前默认 |
 
 ## 8. 相关链接
 

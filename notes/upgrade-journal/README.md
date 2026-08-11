@@ -9,11 +9,11 @@
 
 完整思路见 **[`step-replan-2026-08-05.md`](step-replan-2026-08-05.md)**。
 
-新优先级：
+当前优先级（2026-08-11 更新）：
 ```
-A. 业务闭环（ch 4-8）     ⏳ 当前 P0   跑通 5 个服务 + e2e
-B. 基础设施贯通（ch 11-13）⏸️ P1     接 ELK + OTel + Prom
-C. 纯库升级（4d 等）       ⏸️ P2     业务跑通后再做
+A. 业务闭环（ch 4-8）     ✅ 已闭环     M1-M4 + dev-e2e.sh 回归基线
+B. 基础设施贯通（ch 11-13）✅ 已完成     ELK + OTel + Prom 全部跑通
+C. 纯库升级（4d 等）       🔜 当前 P1    4d 全量迁移（前置已满足）
 ```
 
 ## 已完成清单（history）
@@ -35,6 +35,11 @@ C. 纯库升级（4d 等）       ⏸️ P2     业务跑通后再做
 | 99d  | step-07 M2 e2e working doc (跨 5 服务一笔订单) | ✅ (链路通, D 数据待生产化) |
 | 99e  | step-08 完整下单流程参考文档 (真实业务 + 模拟对照) | ✅ |
 | v3.12 | Kafka Brokers 真实 bug fix (kafka:9092→127.0.0.1:9094) | ✅ |
+| 09-16 | 网关学习链 (调研→nginx→鉴权→APISIX 实战→对比) | ✅ (step-09 ~ step-16) |
+| 17    | step-17 ch 13 监控 (Prometheus + Grafana) | ✅ v3.33/v3.34 |
+| 18    | step-18 ch 12 链路追踪 (Jaeger 1.63 + OTLP) | ✅ v3.35/v3.36 |
+| 19    | step-19 ch 11 日志收集 (filebeat→Kafka→go-stash→ES→Kibana) | ✅ v3.37/v3.39 |
+| 20    | step-20 M3/M4 关账 + dev-e2e.sh 回归基线 | ✅ 2026-08-11 |
 
 ## 项目结构
 
@@ -59,6 +64,18 @@ go-zero-looklook-study/
     ├── step-06-async-event-deep-dive.md    # 异步事件学习
     ├── step-07-m2-e2e.md                   # M2 e2e working doc
     ├── step-08-complete-order-flow.md       # 下单完整流程 (参考文档)
+    ├── step-09-gateway-survey.md            # 网关调研
+    ├── step-10-nginx-101.md                 # nginx 入门
+    ├── step-11-auth-internals.md            # go-zero 鉴权内部机制
+    ├── step-12-nginx-auth.md                # nginx 鉴权层级
+    ├── step-13-apisix-kong.md               # APISIX / Kong 对比
+    ├── step-14-nginx-auth-practice.md       # nginx auth_request 实战
+    ├── step-15-apisix-practice.md           # APISIX 实战
+    ├── step-16-apisix-kong-config-complexity.md
+    ├── step-17-ch13-monitoring.md           # ch 13 监控
+    ├── step-18-ch12-tracing.md              # ch 12 链路追踪
+    ├── step-19-ch11-logging.md              # ch 11 日志收集
+    ├── step-20-m3-m4-e2e-regression.md      # M3/M4 关账 + e2e 回归
     ├── step-06-async-event-deep-dive.md    # 异步事件学习 (api→rpc链 + asynq + Kafka)
     ├── step-99-cleanup-history.md
     ├── progress-day-1.md
@@ -75,53 +92,46 @@ go-zero-looklook-study/
 - 每篇 step 笔记固定格式：目标 / 改动文件 / 关键 diff / 踩坑 / 验证 / 时长
 - **真理来源**：`doc/chinese/` 下 15 章教程 + 我们自己的 step 笔记
 
-## 当前状态（M1 收尾中）
+## 当前状态（2026-08-11, v3.39+）
 
-**最近 commit (v3.12)**：
-- `scripts/dev-up.sh` 把服务 stdout/stderr 重定向到 `tmp/logs/<name>.log` (v3.9)
-- Kafka Brokers 修 `kafka:9092 → 127.0.0.1:9094` (v3.12, 真实 bug)
-- M1 全活闭环 5/5 服务 + closeOrder 实验验证 (60s 内 trade_state 0→-1)
-- 异步事件全部摸清 + asynq `{default}` 命名空间这一发现沉淀进 step-06
+**最近进展**：
+- ch 13 监控 (v3.33/v3.34): Prometheus 12 target + Grafana 7 panel
+- ch 12 追踪 (v3.35/v3.36): Jaeger 1.63 + OTLP HTTP，5 服务跨 api→rpc trace
+- ch 11 日志 (v3.37/v3.39): filebeat 抓 host 日志 → Kafka → go-stash → ES → Kibana `looklook-*`
+- 网关 (v3.24-v3.32): nginx auth_request 实战 + APISIX 实战 + dashboard 修复
+- M3/M4 关账: `scripts/dev-e2e.sh` 可重复回归，happy path 8/8 PASS
 
-**当前进度**：M1 已 **完全收尾**（包含 Kafka Brokers fix + closeOrder 实验）
+**当前进度 (ground truth)**：
+- 11/11 binary 全活（dev-status 全绿，`usercenter-rpc` 2004/4009 在线）
+- 业务闭环: 登录 → 浏览 → 下单 → Kafka 模拟支付 → trade_state 0→1，e2e 脚本可复跑
+- 超时关单: defer 任务已验证 enqueue；等待验证需 `CloseOrderTimeMinutes=1` build + `E2E_CLOSE_VERIFY=1`
+- 15 章进度: ch 1-8 业务闭环 ✅，ch 11-13 基础设施 ✅，ch 2 网关 ✅，ch 10 待 4d 全量，ch 14-15 未做
 
-**M1 完成清单 (ground truth)**：
-- ✅ 11 个 binary 全编译
-- ✅ 11 个 binary 全活（dev-up.sh 起，tmp/logs/ 有 log）
-- ✅ 5 个 service smoke 全通（5/7，剩 commentList 空 stub 跳过 + payment 缺 e2e）
-- ✅ M1.6 实验验证 ⑨⑩ 真活:
-   - M1-1: `asynq:{default}:scheduled` ZSET 有 defer 任务 (id + process_at 一致)
-   - M1-3: CloseOrderTimeMinutes=1, trade_state 60s 内 0→-1
-- ✅ Kafka Brokers 修 (order-mq kq consumer + payment-rpc Push 都通)
-
-**下一步 (M2 候选)**：跨 5 服务一笔订单联通 (browse → order → pay → settle)
-详细规划见 [step-replan-2026-08-05.md](step-replan-2026-08-05.md) § 2 视角 A。
-
-完整细节见 [`step-05-business-baseline.md`](step-05-business-baseline.md)。
+**下一步 (P1)**：Step 8 — `pkg/errors → std errors` 全量迁移，用 `dev-e2e.sh` 做回归。
+详细规划见 [step-replan-2026-08-05.md](step-replan-2026-08-05.md) § 6/§ 7。
 
 ## 已知未完成（按新优先级）
 
-- [ ] **P0**: M1 — 5 个服务全 air 起来，11 个 binary 全活（travel/payment/order/mqueue 还都没起过）
-- [ ] **P1**: M2-M4 — RPC 联调 → e2e 业务线 → 业务代码全读懂 ch 4-8
-- [ ] **P1**: ch 12 修 OTel，ch 11 接日志，ch 13 验证 prom
-- [ ] **P2**: ch 2 nginx 网关（评估 APISIX 替换）
-- [ ] **P2**: Step 4d 全量（业务跑通后做真实回归）
-- [ ] **P3**: 生产部署（ch 14-15，本期大概率跳过）
-- [ ] **P3**: jwt v5 / asynq 升级（free-floating）
+- [ ] **P1**: Step 8 — 4d `pkg/errors` 全量迁移（前置 M1-M4 已满足，用 dev-e2e.sh 回归）
+- [ ] **P2**: 超时关单等待验证（需临时改 `CloseOrderTimeMinutes=1` + `E2E_CLOSE_VERIFY=1`）
+- [ ] **P2**: jwt v5 / asynq 升级（free-floating）
+- [ ] **P2**: 全 docker dev 模式评估（deferred，M8）
+- [ ] **P3**: 日志/指标告警（Kibana Rule + Alertmanager，可选新主题）
+- [ ] **P3**: 生产部署 ch 14-15（本期大概率跳过）
 
 ## git 状态
 
 ```
 $ git log --oneline -5
-a24da59 v3.8: air unified - .air.toml 管全部服务 + telemetry Endpoint 修复
-8211415 v3.7: docs - step-02.5 air single-file roadmap (modd.conf style)
-0bf4f58 v3.6: air 同时启 usercenter rpc + api (脚本编排) + 9 个 yaml 改 host 端口
-8695336 v3.5: docs - step-03-docker-dev-mode.md (全 Docker 模式 roadmap)
-eca2a12 v3.4: docs - step-99-cleanup-history.md (记录 92M 清理)
+62056d0 v3.39: docs - step-19 重新整理为标准 markdown 格式
+2af7a29 v3.38: docs - step-19 ch 11 日志收集完整笔记 (349 行)
+b0dfaf5 v3.37: ch 11 日志收集 (filebeat 抓 host 业务日志)
+83de29c v3.36: docs - step-18 ch 12 链路追踪完整笔记 (503 行)
+8ad692e v3.35: ch 12 链路追踪 (jaeger 1.63 + OTLP)
 ...
 ```
 
 ---
 
-*此 README 在 2026-08-05 重写，从"线性 Step 1-5"切换到"3 层视角 (A/B/C)"。*
+*此 README 在 2026-08-05 重写，从"线性 Step 1-5"切换到"3 层视角 (A/B/C)"；2026-08-11 更新到 v3.39+ 状态。*
 *老 step 笔记全部保留作为历史，未删除任何内容。*

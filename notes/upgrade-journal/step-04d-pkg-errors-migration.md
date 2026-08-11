@@ -3,6 +3,7 @@
 > 日期：2026-08-05  
 > 范围：usercenter (业务+model) + common (result/interceptor) + xerr 包  
 > 状态：✅ usercenter 试点完成，smoke test 通过，**go.mod 保留 pkg/errors**（其他 4 个服务还在用）
+> 2026-08-11：前置 M1-M4 已满足，全量迁移升级为当前 P1（Step 8），用 `dev-e2e.sh` 做回归。
 
 ## 目标
 

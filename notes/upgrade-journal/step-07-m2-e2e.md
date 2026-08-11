@@ -2,7 +2,7 @@
 
 > 日期：2026-08-07 开始  
 > 范围：从"M1 服务全活"升级到"M2 一笔订单真正走完业务闭环"  
-> 状态：⏳ 进行中  
+> 状态：✅ M2 已验证（dev-e2e.sh 可复跑），M3/M4 由 [step-20](step-20-m3-m4-e2e-regression.md) 收尾  
 > 前置：[step-06](step-06-async-event-deep-dive.md) 异步事件知识 + [step-05](step-05-business-baseline.md) M1 闭环
 
 ---
@@ -260,4 +260,3 @@ ON DUPLICATE KEY UPDATE auth_key='fake-openid-for-test';
 - step-04d-pkg-errors-migration.md
 - step-05-business-baseline.md
 - step-07-m2-e2e.md
-
