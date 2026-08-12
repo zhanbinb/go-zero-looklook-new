@@ -12,7 +12,7 @@
 当前优先级（2026-08-11 更新）：
 ```
 A. 业务闭环（ch 4-8）     ✅ 已闭环     M1-M4 + dev-e2e.sh 回归基线
-B. 基础设施贯通（ch 11-13）✅ 已完成     ELK + OTel + Prom 全部跑通
+B. 基础设施贯通（ch 11-13）✅ 已完成     ELK + OTel + Prom 全部跑通（ch 13 含 v3.40 Grafana/Prom 升级 + 告警链路）
 C. 纯库升级（4d 等）       🔜 当前 P1    4d 全量迁移（前置已满足）
 ```
 
@@ -40,6 +40,8 @@ C. 纯库升级（4d 等）       🔜 当前 P1    4d 全量迁移（前置已�
 | 18    | step-18 ch 12 链路追踪 (Jaeger 1.63 + OTLP) | ✅ v3.35/v3.36 |
 | 19    | step-19 ch 11 日志收集 (filebeat→Kafka→go-stash→ES→Kibana) | ✅ v3.37/v3.39 |
 | 20    | step-20 M3/M4 关账 + dev-e2e.sh 回归基线 | ✅ 2026-08-11 |
+| 21    | step-21 告警体系评估（Grafana Alerting vs Kibana vs AM）| ✅ 2026-08-12 |
+| 22    | step-22 告警落地（Grafana 11.4 + Prometheus 2.55.1 升级 + 单条 rule 跑通）| ✅ 2026-08-12 |
 
 ## 项目结构
 
@@ -116,7 +118,7 @@ go-zero-looklook-study/
 - [ ] **P2**: 超时关单等待验证（需临时改 `CloseOrderTimeMinutes=1` + `E2E_CLOSE_VERIFY=1`）
 - [ ] **P2**: jwt v5 / asynq 升级（free-floating）
 - [ ] **P2**: 全 docker dev 模式评估（deferred，M8）
-- [ ] **P3**: 日志/指标告警（Kibana Rule + Alertmanager，可选新主题）
+- [x] **P3**: 指标告警（Grafana 11.4 + webhook mock，✅ v3.40，详见 [step-22](step-22-alerting-implementation.md)）；日志告警（Kibana Rules）暂缓
 - [ ] **P3**: 生产部署 ch 14-15（本期大概率跳过）
 
 ## git 状态
